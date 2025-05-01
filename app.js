@@ -1,24 +1,52 @@
-const express = require('express');
+//Before starting sever and app
+//You must be setup your env value remember that if it not show connected that mean some
+//Problem occure here.
+
+//Requireing express app
+const express = require("express");
 const app = express();
-const db = require('./config/mongoose-connection');
-const cookieParser = require('cookie-parser');
-const path = require('path');
-const ownersRouter = require('./routes/ownerRouter');
-const productsRouter = require('./routes/productRouter');
-const usersRouter = require('./routes/userRouter');
 
+//Requireing npm package
+const cookieParser = require("cookie-parser");
+const path = require("path");
+const expressSession = require("express-session");
+const flash = require("connect-flash");
 
+//It will help to get the all enviormental veriavle
+require("dotenv").config();
+//Requireing Database.
+const userModel = require("./models/user-model");
+const productModel = require("./models/product-model");
+const db = require("./config/mongoose-connection");
+
+//Requireing Routs
+const ownerRoute = require("./routes/ownerRoute");
+const userRoute = require("./routes/userRoute");
+const productRoute = require("./routes/productRoute");
+const indexpage = require("./routes/index");
+
+//Setup Middilewares
+app.set("view engine", "ejs");
 app.use(express.json());
-app.use(cookieParser());    
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname,'public')));
+app.use(express.static(path.join(__dirname, "public")));
 
-app.set('view engine', 'ejs');
+app.use(
+  expressSession({
+    secret: "process.env.SESSION_SECRET", // Replace with a strong, unique secret
+    resave: false,
+    saveUninitialized: true,
+  })
+);
 
-app.use("/owners", ownersRouter);
-app.use("/products", productsRouter);
-app.use("/users", usersRouter);
+app.use(flash());
 
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
-});
+//Setup routs
+app.use("/", indexpage);
+app.use("/owners", ownerRoute);
+app.use("/users", userRoute);
+app.use("/products", productRoute);
+
+//App listening port
+app.listen(3000);
